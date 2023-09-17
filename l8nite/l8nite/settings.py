@@ -76,9 +76,10 @@ WSGI_APPLICATION = 'l8nite.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
+        "NAME": "l8nite",
         "OPTIONS": {
-            "service": "my_service",
-            "passfile": ".my_pgpass",
+            "service": ".pg_service.conf",
+            "passfile": ".pgpass",
         },
     }
 }

@@ -1,1 +1,4 @@
 pybin
+.pg_service.conf
+.pgpass
+__pycache__
