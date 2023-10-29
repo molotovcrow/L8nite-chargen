@@ -6,7 +6,13 @@ services:
 
   postgres:
     image: "postgres:16-alpine"
-    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
     env_file:
       - .env
     ports:
@@ -15,7 +21,48 @@ services:
   adminer:
     image: adminer
     restart: always
+    networks:
+      - backend
     depends_on:
       - postgres
     ports:
       - 8080:8080
+
+  # ---------------------------------------------------------------
+  # L8NITE SERVICES
+  # ---------------------------------------------------------------
+
+  l8nite:
+    build: .
+    command: scripts/start-app.sh
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - $DJANGO_PORT:$DJANGO_PORT
+    networks:
+      - backend
+      - frontend
+    env_file:
+      - .env
+    develop:
+      watch:
+        - action: sync
+          path: ./l8nite
+          target: /opt/app/l8nite
+          ignore:
+            - VENV/
+            - migrations/
+            - __pycache__/
+        - action: rebuild
+          path: requirements.txt
+        - action: sync+restart
+          path: migrations/
+
+# ---------------------------------------------------------------
+# NETWORKS
+# ---------------------------------------------------------------
+
+networks:
+  frontend:
+  backend:

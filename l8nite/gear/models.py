@@ -23,7 +23,7 @@ class Weapon(models.Model):
 
     # I.e. MULTIPLIER * DIE_TYPE
     damage_die_multiplier = models.PositiveSmallIntegerField(default=1)
-    damage_die_type = models.CharField(max_length=2, choices=DIE_TYPE_CHOICES)
+    damage_die_type = models.CharField(max_length=3, choices=DIE_TYPE_CHOICES)
 
     # I.e. RANGE by RANGE_TYPE
     weapon_range = models.PositiveIntegerField()
@@ -87,17 +87,17 @@ class ClassedArmor(Armor):
     enchantments = models.PositiveSmallIntegerField(default=1)
 
 
-class _BaseCrafting(models.Model):
+class BaseCrafting(models.Model):
     name = models.CharField()
     cost = models.PositiveIntegerField()
     description = models.CharField()
 
 
-class Attachment(_BaseCrafting):
+class Attachment(BaseCrafting):
     pass
 
 
-class Enchantment(_BaseCrafting):
+class Enchantment(BaseCrafting):
     ENCHANTMENT_TYPE_CHOICES = [
         ('WE', 'Weapon'),
         ('AR', 'Armor'),

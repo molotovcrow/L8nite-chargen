@@ -1,0 +1,13 @@
+pybin
+.pg_service.conf
+.pgpass
+__pycache__
+
+# Virtual Environments
+VENV
+ENV
+
+# Misc
+README.md
+template.env
+.gitignore
