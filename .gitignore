@@ -2,3 +2,10 @@ pybin
 .pg_service.conf
 .pgpass
 __pycache__
+
+# Virtual Environments
+VENV
+ENV
+
+# Secrets
+.env
