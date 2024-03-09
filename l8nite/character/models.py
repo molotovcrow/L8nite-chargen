@@ -223,12 +223,12 @@ class CharacterEquipment(models.Model):
     @cached_property
     def ac_mod(self) -> int:
         return (
-            self.head.ac_bonus
-            + self.body.ac_bonus
-            + self.left_hand.ac_bonus
-            + self.right_hand.ac_bonus
+            self.head.armor_bonus
+            + self.body.armor_bonus
+            + self.left_hand.armor_bonus
+            + self.right_hand.armor_bonus
             + reduce(
                 lambda a, b: a + b,
-                self.misc_equipped.all().values_list("ac_bonus", flat=True),
+                self.misc_equipped.all().values_list("armor_bonus", flat=True),
             )
         )

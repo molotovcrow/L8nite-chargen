@@ -1,5 +1,4 @@
 import random
-from abc import ABC
 from functools import cached_property
 
 from django.db import models
@@ -7,8 +6,8 @@ from django.db import models
 from l8nite.typedefs import DIE_TYPE_CHOICES, FEET_TO_METERS
 
 
-class Equipment(ABC, models.Model):
-    ac_bonus = models.PositiveIntegerField(default=0)
+class Equipment(models.Model):
+    armor_bonus = models.PositiveSmallIntegerField(default=0)
 
 
 class Weapon(Equipment):
@@ -96,7 +95,7 @@ class ArmWeaponStats(models.Model):
     enchantments = models.PositiveSmallIntegerField(default=0)
 
 
-class Armor(models.Model):
+class Armor(Equipment):
     """
     Base armor information, can be linked to
     additional info via :py:class:`ClassedArmor`.
@@ -109,13 +108,12 @@ class Armor(models.Model):
     ]
 
     name = models.CharField()
-    armor_bonus = models.PositiveSmallIntegerField(default=0)
     hardiness_requirement = models.PositiveSmallIntegerField(default=0)
     cost = models.PositiveIntegerField()
     armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
 
 
-class ClassedArmor(Equipment):
+class ClassedArmor(Armor):
     """
     Classed armor information such as the type of
     armor and the number of enchantments it can have.
