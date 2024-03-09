@@ -1,15 +1,22 @@
-from functools import cached_property
 import random
+from abc import ABC
+from functools import cached_property
 
 from django.db import models
 
 from l8nite.typedefs import DIE_TYPE_CHOICES, FEET_TO_METERS
 
 
-class Weapon(models.Model):
+class Equipment(ABC, models.Model):
+    ac_bonus = models.PositiveIntegerField(default=0)
+
+
+class Weapon(Equipment):
     """
-    Base weapon information, can be linked to additional info via :py:class:`ArmWeaponStats`.
+    Base weapon information, can be linked to
+    additional info via :py:class:`ArmWeaponStats`.
     """
+
     WEAPON_CLASS_CHOICES = [
         ("SA", "Small Arms"),
         ("BA", "Big Arms"),
@@ -30,21 +37,33 @@ class Weapon(models.Model):
 
     # I.e. RANGE by RANGE_TYPE (Cone)
     weapon_range = models.PositiveIntegerField()
-    weapon_range_type = models.CharField(max_length=2, null=True, choices=WEAPON_RANGE_TYPE_CHOICES, default=None)
+    weapon_range_type = models.CharField(
+        max_length=2,
+        null=True,
+        choices=WEAPON_RANGE_TYPE_CHOICES,
+        default=None,
+    )
 
     cost = models.PositiveIntegerField()
 
     @cached_property
     def damage_die_value(self) -> int:
         return int(self.damage_die_type[1:])
-    
+
     @cached_property
     def weapon_range_meters(self) -> int:
         return int(self.weapon_range / FEET_TO_METERS)
 
-    def roll_damage(self, *, modifier: int = 0, disadvantage: bool = False, advantage: bool = False) -> int:
+    def roll_damage(
+        self,
+        *,
+        modifier: int = 0,
+        disadvantage: bool = False,
+        advantage: bool = False
+    ) -> int:
         """
-        Rolls damage for this weapon: XDY + Z, applies advantage and/or disadvantage to the roll if specified.
+        Rolls damage for this weapon: XDY + Z, applies
+        advantage and/or disadvantage to the roll if specified.
 
         :param modifier: The player's damage modifier.
         :param disadvantage: ``True`` if rolling at disadvantage.
@@ -68,7 +87,10 @@ class ArmWeaponStats(models.Model):
     """
     Weapon statistics for small and big arm type weapons.
     """
-    weapon = models.OneToOneField(Weapon, on_delete=models.CASCADE, related_name='arms_info')
+
+    weapon = models.OneToOneField(
+        Weapon, on_delete=models.CASCADE, related_name="arms_info"
+    )
     ammo = models.PositiveSmallIntegerField()
     attachments = models.PositiveSmallIntegerField(default=0)
     enchantments = models.PositiveSmallIntegerField(default=0)
@@ -76,12 +98,14 @@ class ArmWeaponStats(models.Model):
 
 class Armor(models.Model):
     """
-    Base armor information, can be linked to additional info via :py:class:`ClassedArmor`.
+    Base armor information, can be linked to
+    additional info via :py:class:`ClassedArmor`.
     """
+
     ARMOR_TYPE_CHOICES = [
-        ('HE', 'Head'),
-        ('BO', 'Body'),
-        ('SH', 'Shield'),
+        ("HE", "Head"),
+        ("BO", "Body"),
+        ("SH", "Shield"),
     ]
 
     name = models.CharField()
@@ -91,31 +115,37 @@ class Armor(models.Model):
     armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
 
 
-class ClassedArmor(models.Model):
+class ClassedArmor(Equipment):
     """
-    Classed armor information such as the type of armor and the number of enchantments it can have.
+    Classed armor information such as the type of
+    armor and the number of enchantments it can have.
     """
+
     ARMOR_CLASS_CHOICES = [
-        ('HA', 'Heavy Armor'),
-        ('MA', 'Medium Armor'),
-        ('LA', 'Light Armor'),
+        ("HA", "Heavy Armor"),
+        ("MA", "Medium Armor"),
+        ("LA", "Light Armor"),
     ]
 
-    armor = models.OneToOneField(Armor, on_delete=models.CASCADE, related_name='classed_info')
+    armor = models.OneToOneField(
+        Armor, on_delete=models.CASCADE, related_name="classed_info"
+    )
     armor_class = models.CharField(choices=ARMOR_CLASS_CHOICES)
     enchantments = models.PositiveSmallIntegerField(default=1)
 
 
 class EquipmentModification(models.Model):
     """
-    Base equipment modification information, can be linked to additional information via :py:class:`CraftableModification`.
+    Base equipment modification information, can be
+    linked to additional information via :py:class:`CraftableModification`.
 
     Note: this is the "Crafting" sheet on the l8nite db excel document.
     """
+
     CRAFTING_TYPE_CHOICES = [
-        ('EN', 'Enhancement'),
-        ('EC', 'Enchantment'),
-        ('AT', 'Attachment'),
+        ("EN", "Enhancement"),
+        ("EC", "Enchantment"),
+        ("AT", "Attachment"),
     ]
 
     name = models.CharField()
@@ -126,13 +156,21 @@ class EquipmentModification(models.Model):
 
 class CraftableModification(models.Model):
     """
-    Additional crafting information for equipment modifications that can be crafted by the player.
+    Additional crafting information for equipment
+    modifications that can be crafted by the player.
     """
+
     CRAFTING_SKILL_TYPE_CHOICES = [
-        ('TE', 'Technology'),
-        ('MA', 'Magic'),
+        ("TE", "Technology"),
+        ("MA", "Magic"),
     ]
 
-    equipment_modification = models.OneToOneField(EquipmentModification, on_delete=models.CASCADE, related_name='equipment_modification')
-    crafting_skill = models.CharField(max_length=2, choices=CRAFTING_SKILL_TYPE_CHOICES)
+    equipment_modification = models.OneToOneField(
+        EquipmentModification,
+        on_delete=models.CASCADE,
+        related_name="equipment_modification",
+    )
+    crafting_skill = models.CharField(
+        max_length=2, choices=CRAFTING_SKILL_TYPE_CHOICES
+    )
     skill_requirement = models.PositiveSmallIntegerField()

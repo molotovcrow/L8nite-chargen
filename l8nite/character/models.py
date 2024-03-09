@@ -1,9 +1,9 @@
-from functools import reduce
+from functools import cached_property, reduce
 from typing import Literal
 
 from django.db import models
 
-# from l8nite.abilities import CastedAbility
+from l8nite.abilities.models import CastedAbility
 from l8nite.typedefs import RACE_CHOICES
 
 # Create your models here.
@@ -127,9 +127,9 @@ class Character(models.Model):
     charisma = models.PositiveIntegerField(default=0)
     intelligence = models.PositiveIntegerField(default=0)
 
-    # abilities = models.ManyToManyField(
-    #     CastedAbility, on_delete=models.PROTECT, null=True
-    # )
+    abilities = models.ManyToManyField(
+        CastedAbility, on_delete=models.PROTECT, null=True
+    )
 
     # ai_body = Models.ForeignKey(AIBody, null=True, default=None)
     # background = Models.ForeignKey(
@@ -142,7 +142,9 @@ class Character(models.Model):
     noteriety = models.PositiveIntegerField(default=0)
     attribute_points = models.PositiveIntegerField(default=0)
 
-    ac = property(lambda self: 10 + self.dexterity + self.equipment.ac_mod)
+    ac = cached_property(
+        lambda self: 10 + self.dexterity + self.equipment.ac_mod
+    )
 
 
 class CharacterSkills(models.Model):
@@ -218,8 +220,8 @@ class CharacterEquipment(models.Model):
     # or perhaps a fancy broach
     # misc_equipped = models.ManyToManyField(MiscEquipment)
 
-    @property
-    def ac_mod(self):
+    @cached_property
+    def ac_mod(self) -> int:
         return (
             self.head.ac_bonus
             + self.body.ac_bonus
