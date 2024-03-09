@@ -40,12 +40,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-<<<<<<< HEAD
     "gear",
     "character",
     "abilities",
-=======
->>>>>>> refs/remotes/origin/character-models
 ]
 
 MIDDLEWARE = [
