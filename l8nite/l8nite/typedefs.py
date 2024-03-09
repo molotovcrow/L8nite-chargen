@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 DIE_TYPES = (
     "D4",
     "D6",
@@ -8,6 +9,8 @@ DIE_TYPES = (
 )
 
 DIE_TYPE_CHOICES = [(die_type, die_type) for die_type in DIE_TYPES]
+=======
+>>>>>>> refs/remotes/origin/character-models
 RACE_CHOICES = (
     ("HU", "Human"),
     ("OR", "Orc"),
