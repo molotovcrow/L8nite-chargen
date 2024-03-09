@@ -107,6 +107,7 @@ class Armor(models.Model):
     hardiness_requirement = models.PositiveSmallIntegerField(default=0)
     cost = models.PositiveIntegerField()
     armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
+    armor_bonus = models.PositiveSmallIntegerField(default=0)
 
 
 class ClassedArmor(models.Model):
