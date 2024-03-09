@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import Literal
 
 from django.db import models
@@ -75,6 +76,16 @@ class CharacterRace(models.Model):
         return getattr(self, f"base_{att}", 0) + 10
 
 
+class RacialTrait(models.Model):
+    race = models.ForeignKey(
+        CharacterRace,
+        related_name="traits",
+        on_delete=models.CASCADE,
+        required=True,
+    )
+    description = models.TextField(default="", blank=True)
+
+
 class CharacterClass(models.Model):
     pass
 
@@ -121,6 +132,21 @@ class Character(models.Model):
     abilities = models.ManyToManyField(
         CastedAbility, on_delete=models.PROTECT, null=True
     )
+
+    # ai_body = Models.ForeignKey(AIBody, null=True, default=None)
+    # background = Models.ForeignKey(
+    #     CharacterBackground, null=True, default=None
+    # )
+    # talents = Models.ForeignKey(Talent, null=True, defualt=None)
+    # qualities = Models.ForeignKey(Quality, null=True, defualt=None)
+
+    # we may want a max and a current for these
+    noteriety = models.PositiveIntegerField(default=0)
+    attribute_points = models.PositiveIntegerField(default=0)
+
+    ac = property(
+        lambda self: 10 + self.dexterity
+    )  # TODO add equipment bonuses
 
 
 class CharacterSkills(models.Model):
@@ -178,3 +204,35 @@ class CharacterSkills(models.Model):
         """
         # TODO do the modification calculations
         return getattr(self, skill)
+
+
+class CharacterEquipment(models.Model):
+    character = models.OneToOneField(
+        Character, related_name="equipment", on_delete=models.CASCADE
+    )
+    # owned_equipment = models.ManyToManyField(Equipment)
+    # head = models.ForeignKey(HeadEquipment)
+    # body = models.ForeignKey(BodyEquipment)
+
+    # these could be weapon, shield, focus, etc.
+    # left_hand = models.ForeignKey(HandEquipment)
+    # right_hand = models.ForeignKey(HandEquipment)
+
+    # this is supposed to be like amulets, rings, special boots,
+    # or perhaps a fancy broach
+    # misc_equipped = models.ManyToManyField(MiscEquipment)
+
+    @property
+    def ac_mod(self):
+        return (
+            self.head.ac_bonus
+            + self.body.ac_bonus
+            + (self.left_hand.ac_bonus if self.left_hand.has_ac_bonus else 0)
+            + (self.right_hand.ac_bonus if self.right_hand.has_ac_bonus else 0)
+            + reduce(
+                lambda a, b: a + b,
+                self.misc_equipped.filter(has_ac_bonus=True).values_list(
+                    "ac_bonus", flat=True
+                ),
+            )
+        )
