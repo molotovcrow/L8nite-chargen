@@ -124,7 +124,7 @@ class Character(models.Model):
 
 
 class CharacterSkills(models.Model):
-    character = models.ForeignKey(
+    character = models.OneToOneField(
         Character, related_name="skills", on_delete=models.CASCADE
     )
 
