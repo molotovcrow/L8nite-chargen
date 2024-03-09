@@ -127,9 +127,7 @@ class Character(models.Model):
     charisma = models.PositiveIntegerField(default=0)
     intelligence = models.PositiveIntegerField(default=0)
 
-    abilities = models.ManyToManyField(
-        CastedAbility, on_delete=models.PROTECT, null=True
-    )
+    abilities = models.ManyToManyField(CastedAbility, null=True)
 
     # ai_body = Models.ForeignKey(AIBody, null=True, default=None)
     # background = Models.ForeignKey(
