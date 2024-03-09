@@ -1,11 +1,15 @@
+from functools import cached_property
 import random
 
 from django.db import models
 
-from l8nite.typedefs import DIE_TYPE_CHOICES
+from l8nite.typedefs import DIE_TYPE_CHOICES, FEET_TO_METERS
 
 
 class Weapon(models.Model):
+    """
+    Base weapon information, can be linked to additional info via :py:class:`ArmWeaponStats`.
+    """
     WEAPON_CLASS_CHOICES = [
         ("SA", "Small Arms"),
         ("BA", "Big Arms"),
@@ -14,8 +18,7 @@ class Weapon(models.Model):
     ]
 
     WEAPON_RANGE_TYPE_CHOICES = [
-        ("FT", "Feet"),
-        ("ME", "Meters"),
+        ("CO", "Cone"),
     ]
 
     name = models.CharField()
@@ -25,15 +28,19 @@ class Weapon(models.Model):
     damage_die_multiplier = models.PositiveSmallIntegerField(default=1)
     damage_die_type = models.CharField(max_length=3, choices=DIE_TYPE_CHOICES)
 
-    # I.e. RANGE by RANGE_TYPE
+    # I.e. RANGE by RANGE_TYPE (Cone)
     weapon_range = models.PositiveIntegerField()
-    weapon_range_type = models.CharField(max_length=2, choices=WEAPON_RANGE_TYPE_CHOICES, default="FT")
+    weapon_range_type = models.CharField(max_length=2, null=True, choices=WEAPON_RANGE_TYPE_CHOICES, default=None)
 
     cost = models.PositiveIntegerField()
 
-    @property
+    @cached_property
     def damage_die_value(self) -> int:
         return int(self.damage_die_type[1:])
+    
+    @cached_property
+    def weapon_range_meters(self) -> int:
+        return int(self.weapon_range / FEET_TO_METERS)
 
     def roll_damage(self, *, modifier: int = 0, disadvantage: bool = False, advantage: bool = False) -> int:
         """
@@ -43,7 +50,13 @@ class Weapon(models.Model):
         :param disadvantage: ``True`` if rolling at disadvantage.
         :param advantage: ``True`` if rolling at advantage.
         """
-        roll = (self.damage_die_multiplier * random.randint(1, self.damage_die_value)) + modifier
+        # Calculate the base roll, i.e. MULTIPLIER * DIE_TYPE + MODIFIER
+        roll = 0
+        for _ in range(self.damage_die_multiplier):
+            roll += random.randint(1, self.damage_die_value)
+        roll += modifier
+
+        # Apply advantage/disadvantage
         if disadvantage:
             roll -= random.randint(1, 6)
         if advantage:
@@ -51,13 +64,20 @@ class Weapon(models.Model):
         return roll
 
 
-class RangedWeapon(Weapon):
+class ArmWeaponStats(models.Model):
+    """
+    Weapon statistics for small and big arm type weapons.
+    """
+    weapon = models.OneToOneField(Weapon, on_delete=models.CASCADE, related_name='arms_info')
     ammo = models.PositiveSmallIntegerField()
-    attachments = models.PositiveSmallIntegerField()
-    enchantments = models.PositiveSmallIntegerField()
+    attachments = models.PositiveSmallIntegerField(default=0)
+    enchantments = models.PositiveSmallIntegerField(default=0)
 
 
 class Armor(models.Model):
+    """
+    Base armor information, can be linked to additional info via :py:class:`ClassedArmor`.
+    """
     ARMOR_TYPE_CHOICES = [
         ('HE', 'Head'),
         ('BO', 'Body'),
@@ -68,46 +88,51 @@ class Armor(models.Model):
     armor_bonus = models.PositiveSmallIntegerField(default=0)
     hardiness_requirement = models.PositiveSmallIntegerField(default=0)
     cost = models.PositiveIntegerField()
-    armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES, default='SH')
-
-    def clean(self, *args, **kwargs):
-        if self.armor_type != 'SH' and getattr(self, 'armor_class', None) is None:
-            raise TypeError("'%s' type armors must be initialized using 'ClassedArmor'")
-        super().clean(*args, **kwargs)
+    armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
 
 
-class ClassedArmor(Armor):
+class ClassedArmor(models.Model):
+    """
+    Classed armor information such as the type of armor and the number of enchantments it can have.
+    """
     ARMOR_CLASS_CHOICES = [
         ('HA', 'Heavy Armor'),
         ('MA', 'Medium Armor'),
         ('LA', 'Light Armor'),
     ]
 
+    armor = models.OneToOneField(Armor, on_delete=models.CASCADE, related_name='classed_info')
     armor_class = models.CharField(choices=ARMOR_CLASS_CHOICES)
     enchantments = models.PositiveSmallIntegerField(default=1)
 
 
-class BaseCrafting(models.Model):
+class EquipmentModification(models.Model):
+    """
+    Base equipment modification information, can be linked to additional information via :py:class:`CraftableModification`.
+
+    Note: this is the "Crafting" sheet on the l8nite db excel document.
+    """
+    CRAFTING_TYPE_CHOICES = [
+        ('EN', 'Enhancement'),
+        ('EC', 'Enchantment'),
+        ('AT', 'Attachment'),
+    ]
+
     name = models.CharField()
     cost = models.PositiveIntegerField()
     description = models.CharField()
+    crafting_type = models.CharField(choices=CRAFTING_TYPE_CHOICES)
 
 
-class Attachment(BaseCrafting):
-    pass
-
-
-class Enchantment(BaseCrafting):
-    ENCHANTMENT_TYPE_CHOICES = [
-        ('WE', 'Weapon'),
-        ('AR', 'Armor'),
-    ]
-
+class CraftableModification(models.Model):
+    """
+    Additional crafting information for equipment modifications that can be crafted by the player.
+    """
     CRAFTING_SKILL_TYPE_CHOICES = [
         ('TE', 'Technology'),
         ('MA', 'Magic'),
     ]
 
-    enchantment_type = models.CharField(max_length=2, choices=ENCHANTMENT_TYPE_CHOICES)
+    equipment_modification = models.OneToOneField(EquipmentModification, on_delete=models.CASCADE, related_name='equipment_modification')
     crafting_skill = models.CharField(max_length=2, choices=CRAFTING_SKILL_TYPE_CHOICES)
     skill_requirement = models.PositiveSmallIntegerField()
