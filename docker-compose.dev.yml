@@ -56,8 +56,6 @@ services:
             - __pycache__/
         - action: rebuild
           path: requirements.txt
-        - action: sync+restart
-          path: migrations/
 
 # ---------------------------------------------------------------
 # NETWORKS
