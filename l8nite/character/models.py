@@ -3,7 +3,7 @@ from typing import Literal
 
 from django.db import models
 
-from l8nite.abilities import CastedAbility
+# from l8nite.abilities import CastedAbility
 from l8nite.typedefs import RACE_CHOICES
 
 # Create your models here.
@@ -45,7 +45,6 @@ class CharacterRace(models.Model):
     name = models.CharField(
         choices=RACE_CHOICES,
         max_length=50,
-        required=True,
         unique=True,
     )
 
@@ -81,7 +80,6 @@ class RacialTrait(models.Model):
         CharacterRace,
         related_name="traits",
         on_delete=models.CASCADE,
-        required=True,
     )
     description = models.TextField(default="", blank=True)
 
@@ -97,8 +95,8 @@ class Character(models.Model):
         ("SY", "Synergy"),
     )
 
-    first_name = models.Charfield(default="", blank=True, max_length=50)
-    last_name = models.Charfield(default="", blank=True, max_length=50)
+    first_name = models.CharField(default="", blank=True, max_length=50)
+    last_name = models.CharField(default="", blank=True, max_length=50)
     alias = models.CharField(default="", blank=True, max_length=50)
     race = models.ForeignKey(
         CharacterRace,
@@ -117,8 +115,8 @@ class Character(models.Model):
         max_length=2, choices=SECONDARY_SKILLS, default="MA"
     )
 
-    max_health = models.PositiveIntegerField(defualt=0)
-    max_secondary = models.PositiveIntegerField(defualt=0)
+    max_health = models.PositiveIntegerField(default=0)
+    max_secondary = models.PositiveIntegerField(default=0)
 
     hardiness = models.PositiveIntegerField(default=0)
     strength = models.PositiveIntegerField(default=0)
@@ -129,16 +127,16 @@ class Character(models.Model):
     charisma = models.PositiveIntegerField(default=0)
     intelligence = models.PositiveIntegerField(default=0)
 
-    abilities = models.ManyToManyField(
-        CastedAbility, on_delete=models.PROTECT, null=True
-    )
+    # abilities = models.ManyToManyField(
+    #     CastedAbility, on_delete=models.PROTECT, null=True
+    # )
 
     # ai_body = Models.ForeignKey(AIBody, null=True, default=None)
     # background = Models.ForeignKey(
     #     CharacterBackground, null=True, default=None
     # )
-    # talents = Models.ForeignKey(Talent, null=True, defualt=None)
-    # qualities = Models.ForeignKey(Quality, null=True, defualt=None)
+    # talents = Models.ForeignKey(Talent, null=True, default=None)
+    # qualities = Models.ForeignKey(Quality, null=True, default=None)
 
     # we may want a max and a current for these
     noteriety = models.PositiveIntegerField(default=0)
