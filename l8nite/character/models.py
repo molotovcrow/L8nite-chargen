@@ -144,9 +144,7 @@ class Character(models.Model):
     noteriety = models.PositiveIntegerField(default=0)
     attribute_points = models.PositiveIntegerField(default=0)
 
-    ac = property(
-        lambda self: 10 + self.dexterity
-    )  # TODO add equipment bonuses
+    ac = property(lambda self: 10 + self.dexterity + self.equipment.ac_mod)
 
 
 class CharacterSkills(models.Model):
@@ -227,12 +225,10 @@ class CharacterEquipment(models.Model):
         return (
             self.head.ac_bonus
             + self.body.ac_bonus
-            + (self.left_hand.ac_bonus if self.left_hand.has_ac_bonus else 0)
-            + (self.right_hand.ac_bonus if self.right_hand.has_ac_bonus else 0)
+            + self.left_hand.ac_bonus
+            + self.right_hand.ac_bonus
             + reduce(
                 lambda a, b: a + b,
-                self.misc_equipped.filter(has_ac_bonus=True).values_list(
-                    "ac_bonus", flat=True
-                ),
+                self.misc_equipped.all().values_list("ac_bonus", flat=True),
             )
         )
