@@ -6,11 +6,7 @@ from django.db import models
 from l8nite.typedefs import DIE_TYPE_CHOICES, FEET_TO_METERS
 
 
-class Equipment(models.Model):
-    armor_bonus = models.PositiveSmallIntegerField(default=0)
-
-
-class Weapon(Equipment):
+class Weapon(models.Model):
     """
     Base weapon information, can be linked to
     additional info via :py:class:`ArmWeaponStats`.
@@ -95,7 +91,7 @@ class ArmWeaponStats(models.Model):
     enchantments = models.PositiveSmallIntegerField(default=0)
 
 
-class Armor(Equipment):
+class Armor(models.Model):
     """
     Base armor information, can be linked to
     additional info via :py:class:`ClassedArmor`.
@@ -113,7 +109,7 @@ class Armor(Equipment):
     armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
 
 
-class ClassedArmor(Armor):
+class ClassedArmor(models.Model):
     """
     Classed armor information such as the type of
     armor and the number of enchantments it can have.
