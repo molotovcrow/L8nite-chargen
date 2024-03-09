@@ -6,6 +6,38 @@ from l8nite.abilities import CastedAbility
 from l8nite.typedefs import RACE_CHOICES
 
 # Create your models here.
+SkillName = Literal[
+    "small_arms",
+    "big_arms",
+    "melee",
+    "demolitions",
+    "sneak",
+    "athletics",
+    "slight_of_hand",
+    "disguise",
+    "attack",
+    "support",
+    "healing",
+    "summoning",
+    "piloting",
+    "hacking",
+    "security",
+    "kinetic",
+    "survival",
+    "perception",
+    "insight",
+    "investigation",
+    "deception",
+    "intimidation",
+    "persuasion",
+    "performance",
+    "magic",
+    "history",
+    "medicine",
+    "technology",
+]
+
+ShortAttName = Literal["har", "str", "dex", "arc", "log", "acu", "cha", "int"]
 
 
 class CharacterRace(models.Model):
@@ -39,10 +71,7 @@ class CharacterRace(models.Model):
 
     base_int = models.PositiveIntegerField(default=0, editable=False)
 
-    def get_limit(
-        self,
-        att: Literal["har", "str", "dex", "arc", "log", "acu", "cha", "int"],
-    ) -> int:
+    def get_limit(self, att: ShortAttName) -> int:
         return getattr(self, f"base_{att}", 0) + 10
 
 
@@ -141,11 +170,11 @@ class CharacterSkills(models.Model):
     history = models.PositiveIntegerField(default=0)
     technology = models.PositiveIntegerField(default=0)
 
-    def get_modified_skill(self, skill: str) -> int:
+    def get_modified_skill(self, skill: SkillName) -> int:
         """
         Returns the modified skill value for the specified skill
 
-        :param skill: The skill to be modified
+        :param skill: The name of the skill to be modified
         """
-        # TODO
+        # TODO do the modification calculations
         return getattr(self, skill)
