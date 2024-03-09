@@ -1,4 +1,4 @@
-from functools import cached_property, reduce
+from functools import cached_property
 from typing import Literal
 
 from django.db import models
