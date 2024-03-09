@@ -55,21 +55,21 @@ class CharacterRace(models.Model):
     objects are saved to the database and then never changed
     programatically unless cam decides to change them.
     """
-    base_har = models.PositiveIntegerField(default=0, editable=False)
+    base_har = models.PositiveIntegerField(default=0)
 
-    base_str = models.PositiveIntegerField(default=0, editable=False)
+    base_str = models.PositiveIntegerField(default=0)
 
-    base_dex = models.PositiveIntegerField(default=0, editable=False)
+    base_dex = models.PositiveIntegerField(default=0)
 
-    base_arc = models.PositiveIntegerField(default=0, editable=False)
+    base_arc = models.PositiveIntegerField(default=0)
 
-    base_log = models.PositiveIntegerField(default=0, editable=False)
+    base_log = models.PositiveIntegerField(default=0)
 
-    base_acu = models.PositiveIntegerField(default=0, editable=False)
+    base_acu = models.PositiveIntegerField(default=0)
 
-    base_cha = models.PositiveIntegerField(default=0, editable=False)
+    base_cha = models.PositiveIntegerField(default=0)
 
-    base_int = models.PositiveIntegerField(default=0, editable=False)
+    base_int = models.PositiveIntegerField(default=0)
 
     def get_limit(self, att: ShortAttName) -> int:
         return getattr(self, f"base_{att}", 0) + 10
