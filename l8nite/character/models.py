@@ -227,8 +227,7 @@ class CharacterEquipment(models.Model):
             + self.body.armor_bonus
             + self.left_hand.armor_bonus
             + self.right_hand.armor_bonus
-            + reduce(
-                lambda a, b: a + b,
+            + sum(
                 self.misc_equipped.all().values_list("armor_bonus", flat=True),
             )
         )
