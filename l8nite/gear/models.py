@@ -115,7 +115,7 @@ class Armor(models.Model):
     armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
     armor_bonus = models.PositiveSmallIntegerField(default=0)
     armor_class = models.CharField(choices=ARMOR_CLASS_CHOICES, null=True)
-    enchantments = models.PositiveSmallIntegerField(default=1)
+    enchantments = models.PositiveSmallIntegerField(default=0)
 
 
 class EquipmentModification(models.Model):

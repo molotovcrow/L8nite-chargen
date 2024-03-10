@@ -223,7 +223,7 @@ class ItemEncoder(json.JSONEncoder):
             return {
                 "pk": obj.pk,
                 "model": type(obj),
-                "app_label": obj.Meta.app_label,
+                "app_label": obj._meta.app_label,
             }
         return super().default(obj)
 
