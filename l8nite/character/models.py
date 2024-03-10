@@ -1,10 +1,12 @@
+import json
 from functools import cached_property
 from typing import Literal
 
+from abilities.models import CastedAbility
 from django.db import models
+from gear.models import Armor, Weapon
 
-from l8nite.abilities.models import CastedAbility
-from l8nite.typedefs import RACE_CHOICES
+from l8nite.typedefs import CLASS_CHOICES, RACE_CHOICES
 
 # Create your models here.
 SkillName = Literal[
@@ -44,7 +46,7 @@ ShortAttName = Literal["har", "str", "dex", "arc", "log", "acu", "cha", "int"]
 class CharacterRace(models.Model):
     name = models.CharField(
         choices=RACE_CHOICES,
-        max_length=50,
+        max_length=2,
         unique=True,
     )
 
@@ -71,6 +73,9 @@ class CharacterRace(models.Model):
 
     base_int = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        return self.get_name_display()
+
     def get_limit(self, att: ShortAttName) -> int:
         return getattr(self, f"base_{att}", 0) + 10
 
@@ -85,7 +90,14 @@ class RacialTrait(models.Model):
 
 
 class CharacterClass(models.Model):
-    pass
+    name = models.CharField(
+        choices=CLASS_CHOICES,
+        max_length=2,
+        unique=True,
+    )
+
+    def __str__(self):
+        return self.get_name_display()
 
 
 class Character(models.Model):
@@ -143,6 +155,9 @@ class Character(models.Model):
     ac = cached_property(
         lambda self: 10 + self.dexterity + self.equipment.ac_mod
     )
+
+    def __str__(self):
+        return f"{self.alias} ({self.char_class})"
 
 
 class CharacterSkills(models.Model):
@@ -202,30 +217,23 @@ class CharacterSkills(models.Model):
         return getattr(self, skill)
 
 
+class ItemEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Armor) or isinstance(obj, Weapon):
+            return {
+                "pk": obj.pk,
+                "model": type(obj),
+                "app_label": obj.Meta.app_label,
+            }
+        return super().default(obj)
+
+
 class CharacterEquipment(models.Model):
     character = models.OneToOneField(
         Character, related_name="equipment", on_delete=models.CASCADE
     )
-    # owned_equipment = models.ManyToManyField(Equipment)
-    # head = models.ForeignKey(HeadEquipment)
-    # body = models.ForeignKey(BodyEquipment)
 
-    # these could be weapon, shield, focus, etc.
-    # left_hand = models.ForeignKey(HandEquipment)
-    # right_hand = models.ForeignKey(HandEquipment)
+    inventory = models.JSONField(null=True, encoder=ItemEncoder)
 
-    # this is supposed to be like amulets, rings, special boots,
-    # or perhaps a fancy broach
-    # misc_equipped = models.ManyToManyField(MiscEquipment)
-
-    @cached_property
-    def ac_mod(self) -> int:
-        return (
-            self.head.armor_bonus
-            + self.body.armor_bonus
-            + self.left_hand.armor_bonus
-            + self.right_hand.armor_bonus
-            + sum(
-                self.misc_equipped.all().values_list("armor_bonus", flat=True),
-            )
-        )
+    equipped_armor = models.ManyToManyField(Armor)
+    equipped_weapons = models.ManyToManyField(Weapon)

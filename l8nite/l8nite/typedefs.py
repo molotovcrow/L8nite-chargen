@@ -24,3 +24,8 @@ RACE_CHOICES = (
     ("IX", "Ixia"),
     ("QI", "Qitop"),
 )
+CLASS_CHOICES = (
+    ("AS", "Ascended"),
+    ("CH", "Chronographer"),
+    # TODO fill this out with class codes and names
+)

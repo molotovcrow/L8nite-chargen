@@ -93,8 +93,7 @@ class ArmWeaponStats(models.Model):
 
 class Armor(models.Model):
     """
-    Base armor information, can be linked to
-    additional info via :py:class:`ClassedArmor`.
+    Base armor information.
     """
 
     ARMOR_TYPE_CHOICES = [
@@ -103,29 +102,19 @@ class Armor(models.Model):
         ("SH", "Shield"),
     ]
 
+    ARMOR_CLASS_CHOICES = [
+        ("HA", "Heavy Armor"),
+        ("MA", "Medium Armor"),
+        ("LA", "Light Armor"),
+        (None, "No Class"),
+    ]
+
     name = models.CharField()
     hardiness_requirement = models.PositiveSmallIntegerField(default=0)
     cost = models.PositiveIntegerField()
     armor_type = models.CharField(choices=ARMOR_TYPE_CHOICES)
     armor_bonus = models.PositiveSmallIntegerField(default=0)
-
-
-class ClassedArmor(models.Model):
-    """
-    Classed armor information such as the type of
-    armor and the number of enchantments it can have.
-    """
-
-    ARMOR_CLASS_CHOICES = [
-        ("HA", "Heavy Armor"),
-        ("MA", "Medium Armor"),
-        ("LA", "Light Armor"),
-    ]
-
-    armor = models.OneToOneField(
-        Armor, on_delete=models.CASCADE, related_name="classed_info"
-    )
-    armor_class = models.CharField(choices=ARMOR_CLASS_CHOICES)
+    armor_class = models.CharField(choices=ARMOR_CLASS_CHOICES, null=True)
     enchantments = models.PositiveSmallIntegerField(default=1)
 
 
